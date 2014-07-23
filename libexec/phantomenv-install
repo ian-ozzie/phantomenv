@@ -24,18 +24,17 @@ OLDPWD=$(pwd)
 mkdir -p "$version_dir"
 cd "$version_dir"
 
+# Set arch
+arch="$(uname -m)"
+
 # Determine url to download from
 if [ "$(uname -s)" = "Darwin" ]; then
   platform="macosx"
+  download="https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-${version}-${platform}.zip"
 else
   platform="linux"
+  alt_download="https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-${version}-${platform}-${arch}.tar.bz2"
 fi
-
-arch="$(uname -m)"
-
-# URL to download from
-download="https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-${version}-${platform}.zip"
-alt_download="https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-${version}-${platform}.tar.bz2"
 
 # Can't get too clever here
 set +e
@@ -43,11 +42,13 @@ set +e
 # Download binary tarball and install
 # Linux downloads are formatted differently from OS X
 (
+  [ ! -z $download ] && \
   curl -Ls -f "$download" > /tmp/phantomjs-$version-$platform.zip && \
   unzip -o /tmp/phantomjs-$version-$platform.zip -d /tmp && \
   mv /tmp/phantomjs-$version-$platform/bin $version_dir/bin && \
   rm /tmp/phantomjs-$version-$platform.zip
 ) || (
+  [ ! -z $alt_download ] && \
   curl -Ls -f "$alt_download" > /tmp/phantomjs-$version-$platform-$arch.tar.bz2 && \
   tar jxvf /tmp/phantomjs-$version-$platform-$arch.tar.bz2 --strip-components 1 && \
   rm /tmp/phantomjs-$version-$platform-$arch.tar.bz2
